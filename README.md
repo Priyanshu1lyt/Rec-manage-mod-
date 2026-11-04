@@ -8,11 +8,11 @@ blocks, items or registries and no client code, so players should not need to in
 (`displayTest="IGNORE_SERVER_VERSION"`).
 
 > **Status:** the source was written without access to a Gradle/Forge toolchain, so it has **not been compiled
-> or tested yet**. See [Build](#build) and [Test status](#test-status).
+> or tested yet**, and no jar is included. See [Build](#build) and [Test status](#test-status).
 
 ## Build
 
-Requirements: JDK 17 and Gradle 8.1.1 (or newer 8.x compatible with ForgeGradle 6).
+Requirements: JDK 17 and Gradle 8.1.1 (or a newer 8.x compatible with ForgeGradle 6).
 
 ```bash
 gradle wrapper --gradle-version 8.1.1   # one time, generates gradlew
@@ -20,7 +20,26 @@ gradle wrapper --gradle-version 8.1.1   # one time, generates gradlew
 ```
 
 The server jar is written to `build/libs/hideandseek-1.0.0.jar`.
-A GitHub Actions workflow (`.github/workflows/build.yml`) also builds the jar on every push and uploads it as an artifact.
+
+To build on GitHub instead, add `.github/workflows/build.yml` (this could not be pushed automatically because the
+connector lacks the `workflow` permission):
+
+```yaml
+name: Build
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: gradle/actions/setup-gradle@v3
+        with: { gradle-version: 8.1.1 }
+      - run: gradle build --no-daemon
+      - uses: actions/upload-artifact@v4
+        with: { name: hideandseek-jar, path: build/libs/*.jar }
+```
 
 ## Install
 
@@ -74,9 +93,9 @@ join/leave rules, game mode restore, permission level and every title/chat messa
 
 ## Test status
 
-Nothing in this repository has been run yet. Before relying on it, check on a dedicated server:
+Nothing in this repository has been compiled or run yet. Before relying on it, check on a dedicated server:
 command registration, startup, countdown, 5-minute timer, Creative/Spectator exclusion, disconnects, catching and win
-conditions, and stop/reset/pause/resume.
+conditions, and stop/reset/pause/resume. Compile errors from Forge API differences are possible.
 
 ## Known limitations
 
